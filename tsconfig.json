@@ -1,0 +1,16 @@
+{
+    "compilerOptions": {
+        "target": "es5",
+        "composite": true,
+        "declarationMap": true,
+        "declaration": true,
+        "allowJs": true,
+        "emitDeclarationOnly": true,
+    },
+    "include": [
+        "src/**/*.js"
+    ],
+    "exclude": [
+        "src/index.js"
+    ]
+}

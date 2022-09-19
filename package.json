@@ -1,0 +1,42 @@
+{
+  "name": "dmark",
+  "version": "1.0.0",
+  "description": "Parameterizable automation of multi-stack and multi-stage Terraform using YAML configuration file. Ideal for projects that don't want to use HCP.",
+  "main": "src/index.js",
+  "types": "./src/**/*.d.ts",
+  "bin": {
+    "dmark": "src/index.js"
+  },
+  "scripts": {
+    "eslint": "cross-env eslint -c ./.eslintrc --ignore-path ./.eslintignore",
+    "lint": "pnpm eslint .",
+    "lint-fix": "pnpm eslint --fix ."
+  },
+  "keywords": [
+    "terraform",
+    "tf",
+    "iac",
+    "stacks",
+    "stages",
+    "demark",
+    "demarcation",
+    "parametrize",
+    "parameterizable",
+    "automation"
+  ],
+  "author": "Bruno Araujo <bruno@komutilo.com>",
+  "license": "MIT",
+  "dependencies": {
+    "cross-env": "^7.0.3",
+    "cross-spawn": "^7.0.3",
+    "fs-extra": "^10.1.0",
+    "js-yaml": "^4.1.0",
+    "mkdirp": "^1.0.4",
+    "rimraf": "^3.0.2"
+  },
+  "devDependencies": {
+    "eslint": "^8.23.1",
+    "eslint-plugin-security": "^1.5.0",
+    "typescript": "^4.8.3"
+  }
+}
