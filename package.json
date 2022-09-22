@@ -8,9 +8,8 @@
     "dmark": "src/index.js"
   },
   "scripts": {
-    "eslint": "cross-env eslint -c ./.eslintrc --ignore-path ./.eslintignore",
-    "lint": "pnpm eslint .",
-    "lint-fix": "pnpm eslint --fix ."
+    "lint": "node scripts/nodejs/lint.js",
+    "lint-fix": "pnpm lint --fix"
   },
   "keywords": [
     "terraform",
@@ -27,6 +26,7 @@
   "author": "Bruno Araujo <bruno@komutilo.com>",
   "license": "MIT",
   "dependencies": {
+    "chalk": "4.1.0",
     "cross-env": "^7.0.3",
     "cross-spawn": "^7.0.3",
     "fs-extra": "^10.1.0",
