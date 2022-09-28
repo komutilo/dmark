@@ -17,6 +17,8 @@ const HELP_TEXT = `
                                 Can be multiples separated by comma.
     --stages <stages names>     The stages to execute the command.
                                 Can be multiples separated by comma.
+    --labels <labels names>     The labels to filter the stacks.
+                                Can be multiples separated by comma.
     --upgrade,-u                Add the '-upgrade' flag to the 'terraform init' command.
     --fmt                       Flag to execute the 'terraform fmt' command.
     --auto-approve              Auto approve the confirmation input prompt.

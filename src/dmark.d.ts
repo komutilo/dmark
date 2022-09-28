@@ -12,6 +12,7 @@ export type LocalConfig = {
 export type GlobalStackConfig = {
     local?: LocalConfig,
     stages?: StagesConfig,
+    labels?: string[],
 }
 
 export type StackConfig = GlobalStackConfig & {
@@ -30,6 +31,7 @@ export type DmarkConfig = {
 export type DmarkOptions = {
     stacks: string[],
     stages: string[],
+    labels: string[],
     upgrade: boolean,
     fmt: boolean,
     migrateState: boolean,
@@ -39,4 +41,5 @@ export type DmarkOptions = {
 export function getConfig(): DmarkConfig;
 export function getStacks(config: DmarkConfig): string[];
 export function getStages(config: DmarkConfig): string[];
+export function getLabels(config: DmarkConfig): string[];
 export function executeCommand(cmd: string, config: DmarkConfig, opts: DmarkOptions): void;
