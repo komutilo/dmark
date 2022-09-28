@@ -50,6 +50,29 @@ function getStacks(config) {
   return [...new Set(stacks)];
 }
 
+function getLabels(config) {
+  if (!config) {
+    throw new Error(
+      'Execution error, no config provided to getLabels function.',
+    );
+  }
+
+  if (!config.labels) return [];
+
+  const labelsArg = getArgValue('labels');
+  const labels = labelsArg
+    ? labelsArg.toString().split(',')
+    : Object.keys(config.labels);
+
+  for (const label of labels) {
+    if (!Object.keys(config.labels).includes(label)) {
+      throw new Error(`The label "${label}" don't exists in the config file.`);
+    }
+  }
+
+  return [...new Set(labels)];
+}
+
 function getValidStages(config) {
   if (!config) {
     throw new Error(
@@ -330,6 +353,42 @@ function saveLocalState(config, stackName, stageName) {
   }
 }
 
+function getStackLabels(config, stackName) {
+  const labels = [];
+
+  if (config.globals?.labels) {
+    labels.concat(config.globals.labels);
+  }
+
+  if (stackOnConfig(config, stackName)) {
+    if (config.stacks[stackName]?.labels) {
+      labels.concat(config.stacks[stackName].labels);
+    }
+  }
+
+  return labels;
+}
+
+function getLocal(config, stackName) {
+  let local = false;
+
+  if (config.globals?.local) {
+    local = config.globals.local;
+  }
+
+  if (stackOnConfig(config, stackName)) {
+    if (config.stacks[stackName]?.local) {
+      if (typeof config.stacks[stackName].local === 'object') {
+        local = { ...local, ...config.stacks[stackName].local };
+      } else {
+        local = config.stacks[stackName].labels;
+      }
+    }
+  }
+
+  return local;
+}
+
 function executeCommand(cmd, config, opts) {
   const stacks = reOrderStacks(config, opts?.stacks);
   const commandsQueue = [];
@@ -337,14 +396,27 @@ function executeCommand(cmd, config, opts) {
   for (const stackName of stacks) {
     if (!stackOnConfig(config, stackName)) continue;
 
+    const labels = getStackLabels(config, stackName);
+    let stackPass = true;
+
+    for (const label of opts?.labels || []) {
+      if (!labels.includes(label)) {
+        stackPass = false;
+        break;
+      }
+    }
+
+    if (!stackPass) continue;
+
     for (const stageName of opts?.stages || []) {
       if (ignoreStage(config, stackName, stageName)) continue;
 
       const stackFolder = getStackFolder(config, stackName);
       const vars = getVars(config, stackName, stageName);
       const backendConfig = getBackendConfig(config, stackName, stageName);
+      const local = getLocal(config, stackName, stageName);
       let execInit = [];
-      const isLocal = config.stacks[stackName].local || false;
+      const isLocal = local || false;
 
       if (isLocal) {
         execInit = [...vars, 'terraform', `-chdir=${stackFolder}`, 'init'];
@@ -419,6 +491,7 @@ function executeCommand(cmd, config, opts) {
 
 module.exports = {
   getConfig,
+  getLabels,
   getStacks,
   getStages,
   executeCommand,
