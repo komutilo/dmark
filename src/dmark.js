@@ -6,7 +6,7 @@ const yaml = require('js-yaml');
 const rimraf = require('rimraf');
 const fse = require('fs-extra');
 const mkdirp = require('mkdirp');
-const { getArgValue } = require('./cli');
+const { getArgValues } = require('./cli');
 const execCmd = require('./execCmd');
 
 const ALL_STAGES = '__all__';
@@ -14,8 +14,8 @@ const ALL_STAGES = '__all__';
 function getConfig() {
   const pwd = pathResolve(process.cwd());
   const defaultConfigPath = pathResolve(pwd, 'dmark.config.yaml');
-  const configArg = getArgValue('config', 'c');
-  const configFilePath = configArg ? pathResolve(configArg) : defaultConfigPath;
+  const configArg = getArgValues(['--config', '-c']);
+  const configFilePath = configArg.length >= 1 ? pathResolve(configArg[0]) : defaultConfigPath;
   const noFileError = new Error(
     `The config file "${configFilePath}" don't exists.`,
   );
@@ -36,9 +36,9 @@ function getStacks(config) {
     );
   }
 
-  const stacksArg = getArgValue('stacks');
-  const stacks = stacksArg
-    ? stacksArg.toString().split(',')
+  const stacksArg = getArgValues('--stack');
+  const stacks = stacksArg.length > 0
+    ? stacksArg
     : Object.keys(config.stacks);
 
   for (const stack of stacks) {
@@ -50,25 +50,11 @@ function getStacks(config) {
   return [...new Set(stacks)];
 }
 
-function getLabels(config) {
-  if (!config) {
-    throw new Error(
-      'Execution error, no config provided to getLabels function.',
-    );
-  }
-
-  if (!config.labels) return [];
-
-  const labelsArg = getArgValue('labels');
-  const labels = labelsArg
-    ? labelsArg.toString().split(',')
-    : Object.keys(config.labels);
-
-  for (const label of labels) {
-    if (!Object.keys(config.labels).includes(label)) {
-      throw new Error(`The label "${label}" don't exists in the config file.`);
-    }
-  }
+function getLabels() {
+  const labelsArg = getArgValues(['--label', '-l']);
+  const labels = labelsArg.length > 0
+    ? labelsArg
+    : [];
 
   return [...new Set(labels)];
 }
@@ -104,14 +90,12 @@ function getStages(config) {
     );
   }
 
-  const stagesArg = getArgValue('stages');
+  const stages = getArgValues('--stage');
   const validStages = getValidStages(config);
 
-  if (!stagesArg) {
+  if (stages.length < 1) {
     return validStages;
   }
-
-  const stages = stagesArg.toString().split(',');
 
   for (const stage of stages) {
     if (!validStages.includes(stage)) {
@@ -354,7 +338,7 @@ function saveLocalState(config, stackName, stageName) {
 }
 
 function getStackLabels(config, stackName) {
-  const labels = [];
+  let labels = [];
 
   if (config.globals?.labels) {
     labels.concat(config.globals.labels);
@@ -362,7 +346,7 @@ function getStackLabels(config, stackName) {
 
   if (stackOnConfig(config, stackName)) {
     if (config.stacks[stackName]?.labels) {
-      labels.concat(config.stacks[stackName].labels);
+      labels = labels.concat(config.stacks[stackName].labels);
     }
   }
 
@@ -442,7 +426,7 @@ function executeCommand(cmd, config, opts) {
         args: execInit,
         pre: () => {
           console.log(
-            `Running: ${JSON.stringify({ cmd, stackName, stageName })}`,
+            `Running: ${JSON.stringify({ cmd, stackName, stageName, labels: opts?.labels })}`,
           );
           if (isLocal) {
             loadLocalState(config, stackName, stageName);
@@ -458,18 +442,20 @@ function executeCommand(cmd, config, opts) {
         commandsQueue.push({ args: execFmt });
       }
 
-      const exec = [...vars, 'terraform', `-chdir=${stackFolder}`, cmd];
+      if (cmd !== 'init' && cmd !== 'fmt') {
+        const exec = [...vars, 'terraform', `-chdir=${stackFolder}`, cmd];
 
-      if (opts?.autoApprove && cmd !== 'plan') {
-        exec.push('-auto-approve');
+        if (opts?.autoApprove && cmd !== 'plan') {
+          exec.push('-auto-approve');
+        }
+
+        commandsQueue.push({
+          args: exec,
+          post: () => {
+            if (isLocal) saveLocalState(config, stackName, stageName);
+          },
+        });
       }
-
-      commandsQueue.push({
-        args: exec,
-        post: () => {
-          if (isLocal) saveLocalState(config, stackName, stageName);
-        },
-      });
     }
   }
 
