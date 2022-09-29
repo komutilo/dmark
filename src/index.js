@@ -12,10 +12,10 @@ function main() {
     stacks,
     stages,
     labels,
-    upgrade: checkFlag('upgrade', { shortCut: 'u', default: true }),
-    fmt: checkFlag('fmt', { default: true }),
-    migrateState: checkFlag('migrate-state', { default: true }),
-    autoApprove: checkFlag('auto-approve', { default: true }),
+    upgrade: checkFlag('upgrade', { shortCut: 'u', default: false }),
+    fmt: checkFlag('fmt', { default: false }),
+    migrateState: checkFlag('migrate-state', { default: false }),
+    autoApprove: checkFlag('auto-approve', { default: false }),
   });
 }
 

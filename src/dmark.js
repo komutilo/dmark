@@ -416,7 +416,7 @@ function executeCommand(cmd, config, opts) {
       const backendConfig = getBackendConfig(config, stackName, stageName);
       const local = getLocal(config, stackName, stageName);
       let execInit = [];
-      const isLocal = local || false;
+      const isLocal = local ? true : false;
 
       if (isLocal) {
         execInit = [...vars, 'terraform', `-chdir=${stackFolder}`, 'init'];
@@ -446,6 +446,9 @@ function executeCommand(cmd, config, opts) {
           );
           if (isLocal) {
             loadLocalState(config, stackName, stageName);
+          } else {
+            const localStatePath = pathResolve(stackFolder, '.terraform', 'terraform.tfstate');
+            if (fs.existsSync(localStatePath)) fs.unlinkSync(localStatePath);
           }
         },
       });
