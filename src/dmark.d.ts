@@ -32,14 +32,16 @@ export type DmarkOptions = {
     stacks: string[],
     stages: string[],
     labels: string[],
-    upgrade: boolean,
     fmt: boolean,
-    migrateState: boolean,
+    initUpgrade: boolean,
+    initMigrateState: boolean,
     autoApprove: boolean,
+    noInit: boolean,
+    rest: string[],
 }
 
-export function getConfig(): DmarkConfig;
-export function getStacks(config: DmarkConfig): string[];
-export function getStages(config: DmarkConfig): string[];
-export function getLabels(config: DmarkConfig): string[];
+export function getConfig(configPath?: string): DmarkConfig;
+export function getStacks(config: DmarkConfig, stacks?: string[]): string[];
+export function getStages(config: DmarkConfig, stages?: string[]): string[];
+export function getLabels(labels?: string[]): string[];
 export function executeCommand(cmd: string, config: DmarkConfig, opts: DmarkOptions): void;

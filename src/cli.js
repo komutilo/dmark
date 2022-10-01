@@ -1,124 +1,178 @@
-const VALID_COMMANDS = ['apply', 'plan', 'destroy', 'init', 'fmt', 'console', 'validate', 'graph', 'output', 'providers', 'refresh', 'show', 'get', 'test'];
+const columnify = require('columnify');
 
-const HELP_TEXT = `
-    DMARK CLI
-
-    usage: dmark <command> [...options]
-
-    commands:
-    - init                      Prepare your working directory for other commands
-    - validate                  Check whether the configuration is valid
-    - plan                      Show changes required by the current configuration
-    - apply                     Create or update infrastructure
-    - destroy                   Destroy previously-created infrastructure
-    - console                   Try Terraform expressions at an interactive command prompt
-    - fmt                       Reformat your configuration in the standard style
-    - get                       Install or upgrade remote Terraform modules
-    - graph                     Generate a Graphviz graph of the steps in an operation
-    - output                    Show output values from your root module
-    - providers                 Show the providers required for this configuration
-    - refresh                   Update the state to match remote systems
-    - show                      Show the current state or a saved plan
-    - test                      Experimental support for module integration testing
-
-    options:
-    --help,-h                   Show this help text
-    --config,-c <path>          The config file path
-    --stack <stack name>        The stack(s) to execute the command
-    --stage <stage name>        The stage(s) to execute the command
-    --label,-l <label name>     The label(s) to filter the stacks
-    --upgrade,-u                Add the '-upgrade' flag to the 'terraform init' command
-    --fmt                       Flag to execute the 'terraform fmt' command
-    --auto-approve              Auto approve the confirmation input prompt
-    --migrate-state             Add the '-migrate-state' flag to the 'terraform init' command
-
-`;
-
-function showHelp() {
-  const args = process.argv.slice(2);
-  if (args.length < 1) {
-    console.log(HELP_TEXT);
+function removeArgPrefix(arg) {
+  const pattern = new RegExp(/^([-]{1,2}|)(.*)$/gm);
+  const matches = arg.matchAll(pattern);
+  for (const match of matches) {
+    if (match.length >= 3) {
+      return match[2];
+    }
   }
-
-  if (checkFlag('help', { shortCut: 'h' })) {
-    console.log(HELP_TEXT);
-    process.exit(0);
-  }
+  return null;
 }
 
-function checkFlag(flagName, opts) {
-  if (typeof flagName !== 'string') {
-    throw new Error(`${flagName} is not a valid CLI flag.`);
+function fixArgs(name, shortCut) {
+  if (typeof name !== 'string' && !Array.isArray(name)) {
+    throw new Error(`${name} is not a valid CLI argument.`);
   }
 
-  const flagNameNormalized = `--${flagName.replace('-', '')}`;
-  const args = process.argv.slice(2);
-  let flagValue = false;
+  let shortCuts = [];
+  let names = !Array.isArray(name) ? [name] : name;
+  names = names.map((n) => `--${removeArgPrefix(n)}`);
 
-  if (args.includes(flagNameNormalized)) {
-    flagValue = true;
+  if (shortCut && (typeof shortCut === 'string' || Array.isArray(shortCut))) {
+    shortCuts = !Array.isArray(shortCut) ? [shortCut] : shortCut;
+    shortCuts = shortCuts.map((s) => `-${removeArgPrefix(s)}`);
   }
 
-  if (opts?.shortCut && !flagValue) {
-    const flagShortCutNormalized = `-${opts.shortCut.replace('-', '')[0]}`;
+  return [...names, ...shortCuts];
+}
 
-    if (args.includes(flagShortCutNormalized)) {
-      flagValue = true;
+function checkFlag(name, shortCut, args) {
+  const flags = fixArgs(name, shortCut);
+  const key = Array.isArray(name) ? name.length > 0 && name[0] : name;
+
+  for (const flag of flags) {
+    if (args.includes(flag)) {
+      return { key, value: true, index: args.indexOf(flag) };
     }
   }
 
-  return flagValue;
+  return { key, value: false };
 }
 
-function getArgValues(argVariants) {
-  if (!(Array.isArray(argVariants)) && (typeof argVariants !== 'string')) {
-    throw new Error(`${argVariants} is not a valid CLI argument name.`);
-  }
-
-  const variants = typeof argVariants === 'string' ? [argVariants] : argVariants;
-
-  const cliArgs = process.argv.slice(2);
+function getCliOptionValues(keys, shortCut, args) {
+  const variants = fixArgs(keys, shortCut);
+  const key = Array.isArray(keys) ? keys.length > 0 && keys[0] : keys;
+  const indexes = [];
   const values = [];
 
   for (const variant of variants) {
-    const cliArgsStack = [...cliArgs];
+    const cliArgsStack = args.map((arg, index) => { return { arg, index }; });
     let lastCliArg = null;
 
     while (cliArgsStack.length > 0) {
       const cliArg = cliArgsStack.pop();
 
-      if (lastCliArg && cliArg === variant) {
-        values.push(lastCliArg);
+      if (lastCliArg && cliArg.arg === variant) {
+        values.push(lastCliArg.arg);
+        indexes.push(lastCliArg.index);
+        indexes.push(cliArg.index);
       }
 
       lastCliArg = cliArg;
     }
   }
 
-  return values;
+  return { key, values, indexes };
 }
 
-function getCommand() {
+function mountHelpText(_, validFlags, validOptions) {
+  let helpText = `
+DMARK CLI
+
+usage: dmark <terraform command> [...options] [...teraform options]
+
+options:
+`;
+
+  const columnsData = {};
+
+  for (const validOption of validOptions) {
+    const option = fixArgs(validOption.name, validOption.shortCut);
+    columnsData[option.join(',')] = validOption.description;
+  }
+
+  for (const validFlag of validFlags) {
+    const flag = fixArgs(validFlag.name, validFlag.shortCut);
+    columnsData[flag.join(',')] = validFlag.description;
+  }
+
+  helpText += `${columnify(columnsData, { columns: ['OPTION', 'DESCRIPTION'] })}\n`;
+  return helpText;
+}
+
+function showHelp(cmd, validFlags, validOptions) {
   const args = process.argv.slice(2);
 
+  const helpText = mountHelpText(cmd, validFlags, validOptions);
+
   if (args.length < 1) {
-    throw new Error('No command provided.');
+    console.log(helpText);
+    process.exit(1);
   }
 
-  const cmd = args[0].toString().toLowerCase();
+  if (args.includes('--help') || args.includes('-h')) {
+    console.log(helpText);
+    process.exit(0);
+  }
+}
 
-  if (cmd.includes('-') || !VALID_COMMANDS.includes(cmd)) {
-    throw new Error(
-      `"${cmd}" is a invalid command. Should be one of: ${VALID_COMMANDS}`,
-    );
+function getFlags(validFlags, argv) {
+  const flags = {};
+  const indexes = [];
+
+  if (!Array.isArray(validFlags)) {
+    return { flags };
   }
 
-  return cmd;
+  for (const validFlag of validFlags) {
+    const { key, value, index } = checkFlag(validFlag.name, validFlag.shortCut, argv);
+    // eslint-disable-next-line security/detect-object-injection
+    flags[key] = value;
+    if (typeof index === 'number') indexes.push(index);
+  }
+
+  return { flags, indexes };
+}
+
+function getOptions(validOptions, argv) {
+  const options = {};
+  let indexes = [];
+
+  if (!Array.isArray(validOptions)) {
+    return { options };
+  }
+
+  for (const validOption of validOptions) {
+    const { key, values, indexes: optIndexes } = getCliOptionValues(validOption.name, validOption.shortCut, argv);
+    // eslint-disable-next-line security/detect-object-injection
+    options[key] = values;
+    indexes = indexes.concat(optIndexes);
+  }
+
+  return { options, indexes };
+}
+
+function parseArgv({ validFlags, validOptions }) {
+  if (process.argv.length < 3) {
+    showHelp(null, validFlags, validOptions);
+  }
+
+  let argv = [...process.argv.slice(2)];
+
+  if (argv[0][0] === '-') {
+    throw new Error('The first argument should be a command...');
+  }
+
+  const cmd = argv[0].toString().toLowerCase();
+  argv = argv.slice(1);
+
+  const { flags, indexes: flagsIndexes } = getFlags(validFlags, argv);
+  argv = argv.filter((_, index) => !flagsIndexes.includes(index));
+
+  const { options, indexes: optsIndexes } = getOptions(validOptions, argv);
+  argv = argv.filter((_, index) => !optsIndexes.includes(index));
+
+  return {
+    cmd,
+    flags,
+    options,
+    rest: argv,
+    showHelp: () => showHelp(cmd, validFlags, validOptions),
+  };
 }
 
 module.exports = {
-  checkFlag,
-  getArgValues,
-  getCommand,
-  showHelp,
+  parseArgv,
 };

@@ -1,21 +1,25 @@
-const { checkFlag, getCommand, showHelp } = require('./cli');
-const { getConfig, getStacks, getStages, executeCommand, getLabels } = require('./dmark');
+const { parseArgv } = require('./cli');
+const { getConfig, getStacks, getLabels, getStages, executeCommand } = require('./dmark');
+const { cliConfig } = require('./cliConfig');
 
 function main() {
+  const { cmd, flags, options, rest, showHelp } = parseArgv(cliConfig);
+
   showHelp();
-  const cmd = getCommand();
-  const config = getConfig();
-  const stacks = getStacks(config);
-  const stages = getStages(config);
-  const labels = getLabels(config);
+  const config = getConfig(options?.config);
+  const stacks = getStacks(config, options?.stack);
+  const stages = getStages(config, options?.stage);
+  const labels = getLabels(options?.label);
   executeCommand(cmd, config, {
     stacks,
     stages,
     labels,
-    upgrade: checkFlag('upgrade', { shortCut: 'u' }),
-    fmt: checkFlag('fmt', { default: false }),
-    migrateState: checkFlag('migrate-state'),
-    autoApprove: checkFlag('auto-approve'),
+    fmt: flags?.fmt,
+    initUpgrade: flags?.upgrade,
+    initMigrateState: flags['migrate-state'],
+    autoApprove: flags['auto-approve'],
+    noInit: flags['no-init'],
+    rest,
   });
 }
 
