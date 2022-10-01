@@ -6,16 +6,14 @@ const yaml = require('js-yaml');
 const rimraf = require('rimraf');
 const fse = require('fs-extra');
 const mkdirp = require('mkdirp');
-const { getArgValues } = require('./cli');
 const execCmd = require('./execCmd');
 
 const ALL_STAGES = '__all__';
 
-function getConfig() {
+function getConfig(configPath) {
   const pwd = pathResolve(process.cwd());
   const defaultConfigPath = pathResolve(pwd, 'dmark.config.yaml');
-  const configArg = getArgValues(['--config', '-c']);
-  const configFilePath = configArg.length >= 1 ? pathResolve(configArg[0]) : defaultConfigPath;
+  const configFilePath = configPath && configPath?.length >= 1 ? pathResolve(configPath[0]) : defaultConfigPath;
   const noFileError = new Error(
     `The config file "${configFilePath}" don't exists.`,
   );
@@ -29,16 +27,15 @@ function getConfig() {
   }
 }
 
-function getStacks(config) {
+function getStacks(config, stacks) {
   if (!config) {
     throw new Error(
       'Execution error, no config provided to getStacks function.',
     );
   }
 
-  const stacksArg = getArgValues('--stack');
-  const stacks = stacksArg.length > 0
-    ? stacksArg
+  stacks = stacks && Array.isArray(stacks) && stacks.length > 0
+    ? stacks
     : Object.keys(config.stacks);
 
   for (const stack of stacks) {
@@ -50,10 +47,9 @@ function getStacks(config) {
   return [...new Set(stacks)];
 }
 
-function getLabels() {
-  const labelsArg = getArgValues(['--label', '-l']);
-  const labels = labelsArg.length > 0
-    ? labelsArg
+function getLabels(labels) {
+  labels = labels && Array.isArray(labels) && labels.length > 0
+    ? labels
     : [];
 
   return [...new Set(labels)];
@@ -83,17 +79,16 @@ function getValidStages(config) {
   return [...new Set(validStages)].filter((vs) => vs !== ALL_STAGES);
 }
 
-function getStages(config) {
+function getStages(config, stages) {
   if (!config) {
     throw new Error(
       'Execution error, no config provided to getStages function.',
     );
   }
 
-  const stages = getArgValues('--stage');
   const validStages = getValidStages(config);
 
-  if (stages.length < 1) {
+  if (!stages || !Array.isArray(stages) || (stages?.length < 1)) {
     return validStages;
   }
 
@@ -402,43 +397,54 @@ function executeCommand(cmd, config, opts) {
       let execInit = [];
       const isLocal = local ? true : false;
 
-      if (isLocal) {
-        execInit = [...vars, 'terraform', `-chdir=${stackFolder}`, 'init'];
-      } else {
-        execInit = [
-          ...vars,
-          'terraform',
-          `-chdir=${stackFolder}`,
-          'init',
-          ...backendConfig,
-        ];
-      }
+      if (!opts?.noInit) {
+        if (isLocal) {
+          execInit = [...vars, 'terraform', `-chdir=${stackFolder}`, 'init'];
+        } else {
+          execInit = [
+            ...vars,
+            'terraform',
+            `-chdir=${stackFolder}`,
+            'init',
+            ...backendConfig,
+          ];
+        }
 
-      if (opts?.migrateState) {
-        execInit.push('-migrate-state');
-      }
+        if (opts?.initMigrateState) {
+          execInit.push('-migrate-state');
+        }
 
-      if (opts?.upgrade) {
-        execInit.push('-upgrade');
-      }
+        if (opts?.initUpgrade) {
+          execInit.push('-upgrade');
+        }
 
-      commandsQueue.push({
-        args: execInit,
-        pre: () => {
-          console.log(
-            `Running: ${JSON.stringify({ cmd, stackName, stageName, labels: opts?.labels })}`,
-          );
-          if (isLocal) {
-            loadLocalState(config, stackName, stageName);
-          } else {
-            const localStatePath = pathResolve(stackFolder, '.terraform', 'terraform.tfstate');
-            if (fs.existsSync(localStatePath)) fs.unlinkSync(localStatePath);
-          }
-        },
-      });
+        if (cmd === 'init' && opts?.rest.length > 0) {
+          execInit.concat(opts.rest);
+        }
+
+        commandsQueue.push({
+          args: execInit,
+          pre: () => {
+            console.log('\nRunning Terraform with: --------------------');
+            console.log({ cmd, stackName, stageName, labels: opts?.labels });
+            console.log('--------------------------------------------\n');
+            if (isLocal) {
+              loadLocalState(config, stackName, stageName);
+            } else {
+              const localStatePath = pathResolve(stackFolder, '.terraform', 'terraform.tfstate');
+              if (fs.existsSync(localStatePath)) fs.unlinkSync(localStatePath);
+            }
+          },
+        });
+      }
 
       if (opts?.fmt) {
         const execFmt = [...vars, 'terraform', `-chdir=${stackFolder}`, 'fmt'];
+
+        if (cmd === 'fmt' && opts?.rest.length > 0) {
+          execFmt.concat(opts.rest);
+        }
+
         commandsQueue.push({ args: execFmt });
       }
 
@@ -447,6 +453,10 @@ function executeCommand(cmd, config, opts) {
 
         if (opts?.autoApprove && cmd !== 'plan') {
           exec.push('-auto-approve');
+        }
+
+        if (opts?.rest.length > 0) {
+          exec.concat(opts.rest);
         }
 
         commandsQueue.push({
