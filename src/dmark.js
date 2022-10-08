@@ -425,9 +425,9 @@ function executeCommand(cmd, config, opts) {
         commandsQueue.push({
           args: execInit,
           pre: () => {
-            console.log('\nRunning Terraform with: --------------------');
+            console.log('\nRunning Terraform with: ----------------------------------------------------------------');
             console.log({ cmd, stackName, stageName, labels: opts?.labels });
-            console.log('--------------------------------------------\n');
+            console.log('----------------------------------------------------------------------------------------\n');
             if (isLocal) {
               loadLocalState(config, stackName, stageName);
             } else {
