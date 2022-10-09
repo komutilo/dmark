@@ -1,7 +1,7 @@
 {
   "name": "dmark",
   "version": "1.0.0",
-  "description": "Parameterizable automation of multi-stack and multi-stage Terraform using YAML configuration file. Ideal for projects that don't want to use HCP.",
+  "description": "Terraform wrapper for multi-stage and multi-stack which only add a config file.",
   "main": "src/index.js",
   "types": "./src/**/*.d.ts",
   "bin": {
@@ -21,7 +21,9 @@
     "demarcation",
     "parametrize",
     "parameterizable",
-    "automation"
+    "automation",
+    "wrapper",
+    "dry"
   ],
   "author": "Bruno Araujo <bruno@komutilo.com>",
   "license": "MIT",
