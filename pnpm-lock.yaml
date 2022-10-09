@@ -12,7 +12,9 @@ specifiers:
   js-yaml: ^4.1.0
   mkdirp: ^1.0.4
   mock-argv: ^2.0.8
+  promisify-child-process: ^4.1.1
   rimraf: ^3.0.2
+  spawk: ^1.7.1
   typescript: ^4.8.3
 
 dependencies:
@@ -30,6 +32,8 @@ devDependencies:
   eslint-plugin-security: 1.5.0
   jest: 29.1.2
   mock-argv: 2.0.8
+  promisify-child-process: 4.1.1
+  spawk: 1.7.1
   typescript: 4.8.4
 
 packages:
@@ -2425,6 +2429,11 @@ packages:
       react-is: 18.2.0
     dev: true
 
+  /promisify-child-process/4.1.1:
+    resolution: {integrity: sha512-/sRjHZwoXf1rJ+8s4oWjYjGRVKNK1DUnqfRC1Zek18pl0cN6k3yJ1cCbqd0tWNe4h0Gr+SY4vR42N33+T82WkA==}
+    engines: {node: '>=8'}
+    dev: true
+
   /prompts/2.4.2:
     resolution: {integrity: sha512-NxNv/kLguCA7p3jE8oL2aEBsrJWgAakBpgmgK6lpPWV+WuOmY6r2/zbAVnP+T8bQlA0nzHXSJSJW0Hq7ylaD2Q==}
     engines: {node: '>= 6'}
@@ -2565,6 +2574,11 @@ packages:
   /source-map/0.6.1:
     resolution: {integrity: sha512-UjgapumWlbMhkBgzT7Ykc5YXUT46F0iKu8SGXq0bcwP5dz/h0Plj6enJqjz1Zbq2l5WaqYnrVbwWOWMyF3F47g==}
     engines: {node: '>=0.10.0'}
+    dev: true
+
+  /spawk/1.7.1:
+    resolution: {integrity: sha512-qkPqVdPp5ICEeSYKB/qCkwIBB0IWQuouEvYenQvpTq15fqSQgutpH453NjEImrpCWTwQwj2bQjGp8YGHapEiWw==}
+    engines: {node: '>=12.0.0'}
     dev: true
 
   /sprintf-js/1.0.3:
