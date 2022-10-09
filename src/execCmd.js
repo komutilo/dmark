@@ -1,4 +1,3 @@
-/* eslint-disable security/detect-object-injection */
 const commandConvert = require('cross-env/src/command');
 const varValueConvert = require('cross-env/src/variable');
 const { spawn } = require('cross-spawn');
@@ -10,6 +9,7 @@ function execCmd(args, cb) {
   let commandArgs = [];
 
   for (let i = 0; i < args.length; i++) {
+    // eslint-disable-next-line security/detect-object-injection
     const match = envSetterRegex.exec(args[i]);
     if (match) {
       let value;
@@ -46,6 +46,7 @@ function execCmd(args, cb) {
   }
 
   Object.keys(envSetters).forEach((varName) => {
+    // eslint-disable-next-line security/detect-object-injection
     env[varName] = varValueConvert(envSetters[varName], varName);
   });
 
@@ -75,6 +76,8 @@ function execCmd(args, cb) {
     });
     return proc;
   }
+
+  return null;
 }
 
 module.exports = execCmd;

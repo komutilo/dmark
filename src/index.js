@@ -3,13 +3,13 @@ const { getConfig, getStacks, getLabels, getStages, executeCommand } = require('
 const { cliConfig } = require('./cliConfig');
 
 function main() {
-  const { cmd, flags, options, rest, showHelp } = parseArgv(cliConfig);
+  const { cmd, flags, options, rest } = parseArgv(cliConfig);
 
-  showHelp();
   const config = getConfig(options?.config);
   const stacks = getStacks(config, options?.stack);
   const stages = getStages(config, options?.stage);
   const labels = getLabels(options?.label);
+
   executeCommand(cmd, config, {
     stacks,
     stages,
