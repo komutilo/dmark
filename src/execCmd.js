@@ -1,8 +1,14 @@
+const cp = require('promisify-child-process');
 const commandConvert = require('cross-env/src/command');
 const varValueConvert = require('cross-env/src/variable');
-const { spawn } = require('cross-spawn');
+const parse = require('cross-spawn/lib/parse');
 
-function execCmd(args, cb) {
+async function spawn(command, args, options) {
+  const parsed = parse(command, args, options);
+  return await cp.spawn(parsed.command, parsed.args, parsed.options);
+}
+
+async function execCmd(args) {
   const envSetterRegex = /(\w+)=('(.*)'|"(.*)"|(.*))/;
   const envSetters = {};
   let command = null;
@@ -51,7 +57,7 @@ function execCmd(args, cb) {
   });
 
   if (command) {
-    const proc = spawn(
+    return await spawn(
       commandConvert(command, env, true),
       commandArgs.map((arg) => commandConvert(arg, env)),
       {
@@ -60,21 +66,6 @@ function execCmd(args, cb) {
         env,
       },
     );
-    process.on('SIGTERM', () => proc.kill('SIGTERM'));
-    process.on('SIGINT', () => proc.kill('SIGINT'));
-    process.on('SIGBREAK', () => proc.kill('SIGBREAK'));
-    process.on('SIGHUP', () => proc.kill('SIGHUP'));
-    proc.on('exit', (code, signal) => {
-      let crossEnvExitCode = code;
-      if (crossEnvExitCode === null) {
-        crossEnvExitCode = signal === 'SIGINT' ? 0 : 1;
-      }
-      if (crossEnvExitCode !== 0) {
-        throw new Error(`child process exit with code ${crossEnvExitCode}`);
-      }
-      if (cb) cb();
-    });
-    return proc;
   }
 
   return null;

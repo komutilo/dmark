@@ -45,6 +45,12 @@ importers:
       mock-argv:
         specifier: ^2.0.8
         version: 2.0.8
+      promisify-child-process:
+        specifier: ^4.1.1
+        version: 4.1.2
+      spawk:
+        specifier: ^1.7.1
+        version: 1.8.2
       typescript:
         specifier: ^4.8.3
         version: 4.9.5
@@ -1197,6 +1203,10 @@ packages:
     resolution: {integrity: sha512-Pdlw/oPxN+aXdmM9R00JVC9WVFoCLTKJvDVLgmJ+qAffBMxsV85l/Lu7sNx4zSzPyoL2euImuEwHhOXdEgNFZQ==}
     engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
 
+  promisify-child-process@4.1.2:
+    resolution: {integrity: sha512-APnkIgmaHNJpkAn7k+CrJSi9WMuff5ctYFbD0CO2XIPkM8yO7d/ShouU2clywbpHV/DUsyc4bpJCsNgddNtx4g==}
+    engines: {node: '>=8'}
+
   prompts@2.4.2:
     resolution: {integrity: sha512-NxNv/kLguCA7p3jE8oL2aEBsrJWgAakBpgmgK6lpPWV+WuOmY6r2/zbAVnP+T8bQlA0nzHXSJSJW0Hq7ylaD2Q==}
     engines: {node: '>= 6'}
@@ -1291,6 +1301,10 @@ packages:
   source-map@0.6.1:
     resolution: {integrity: sha512-UjgapumWlbMhkBgzT7Ykc5YXUT46F0iKu8SGXq0bcwP5dz/h0Plj6enJqjz1Zbq2l5WaqYnrVbwWOWMyF3F47g==}
     engines: {node: '>=0.10.0'}
+
+  spawk@1.8.2:
+    resolution: {integrity: sha512-3Dl+ekoMHRvXo+Xc3EUSnjySawnc9SpkaBuA3kU2wYiuSEAIYB4b5cGjvmq5olexBsO/fCLZUKHjSMQlzSU4Ww==}
+    engines: {node: '>=12.0.0'}
 
   sprintf-js@1.0.3:
     resolution: {integrity: sha512-D9cPgkvLlV3t3IzL0D0YLvGA9Ahk4PcvVwUbN0dSGr1aP0Nrt4AEnTUbuGvquEC0mA64Gqt1fzirlRs5ibXx8g==}
@@ -2903,6 +2917,8 @@ snapshots:
       ansi-styles: 5.2.0
       react-is: 18.3.1
 
+  promisify-child-process@4.1.2: {}
+
   prompts@2.4.2:
     dependencies:
       kleur: 3.0.3
@@ -2973,6 +2989,8 @@ snapshots:
       source-map: 0.6.1
 
   source-map@0.6.1: {}
+
+  spawk@1.8.2: {}
 
   sprintf-js@1.0.3: {}
 

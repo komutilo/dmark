@@ -368,7 +368,7 @@ function getLocal(config, stackName) {
   return local;
 }
 
-function executeCommand(cmd, config, opts) {
+async function executeCommand(cmd, config, opts) {
   const stacks = reOrderStacks(config, opts?.stacks);
   const commandsQueue = [];
 
@@ -471,7 +471,7 @@ function executeCommand(cmd, config, opts) {
 
   commandsQueue.reverse();
 
-  const recursiveQueue = () => {
+  const recursiveQueue = async () => {
     if (commandsQueue.length < 1) return;
     const { args, pre, post } = commandsQueue.pop();
 
@@ -479,13 +479,17 @@ function executeCommand(cmd, config, opts) {
 
     console.log(args.join(' '));
 
-    execCmd(args, () => {
-      if (post) post();
-      recursiveQueue();
-    });
+    const proc = await execCmd(args);
+
+    if (proc.code !== 0) {
+      process.exit(proc.code);
+    }
+
+    if (post) post();
+    await recursiveQueue();
   };
 
-  recursiveQueue();
+  await recursiveQueue();
 }
 
 module.exports = {
