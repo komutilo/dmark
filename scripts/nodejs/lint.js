@@ -1,4 +1,4 @@
-const { crossEnv } = require('./utils/crossEnv');
+const execCmd = require('../../src/execCmd');
 const { runQueue } = require('./utils/runQueue');
 
 const fix = process.argv.includes('--fix');
@@ -13,10 +13,10 @@ if (fix) {
 runQueue([
   {
     label: 'Executing the ESLint command...',
-    task: (next) => crossEnv(eslintCmd, next),
+    task: (next) => execCmd(eslintCmd, next),
   },
   {
     label: 'Executing the pnpm audit for all node modules...',
-    task: (next) => crossEnv(auditCmd, next),
+    task: (next) => execCmd(auditCmd, next),
   },
 ]);

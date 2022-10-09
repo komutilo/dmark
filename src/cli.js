@@ -164,12 +164,13 @@ function parseArgv({ validFlags, validOptions }) {
   const { options, indexes: optsIndexes } = getOptions(validOptions, argv);
   argv = argv.filter((_, index) => !optsIndexes.includes(index));
 
+  showHelp(cmd, validFlags, validOptions);
+
   return {
     cmd,
     flags,
     options,
     rest: argv,
-    showHelp: () => showHelp(cmd, validFlags, validOptions),
   };
 }
 
