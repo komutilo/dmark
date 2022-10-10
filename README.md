@@ -1,4 +1,8 @@
 # Dmark
+
+<!-- Badges -->
+[![git last tag][img-github-tag-badge]][link-github-tags] [![npm last version][img-npm-version-badge]][link-npm]
+
 Terraform wrapper for multi-stage and multi-stack that adds only a config file. Perfect for no HCP projects.
 
 ## Dependencies
@@ -101,3 +105,9 @@ dmark plan --stack aBucketStack --stage dev
 dmark apply --stack aBucketStack --stage dev
 
 ```
+
+[img-github-tag-badge]:https://img.shields.io/github/v/tag/komutilo/dmark?style=flat-square
+[img-npm-version-badge]:https://img.shields.io/npm/v/dmark/latest?style=flat-square
+[img-github-workflow-badge]:https://img.shields.io/github/workflow/status/komutilo/dmark/deploy/main?style=flat-square
+[link-github-tags]:https://github.com/komutilo/dmark/tags
+[link-npm]:https://www.npmjs.com/package/dmark
