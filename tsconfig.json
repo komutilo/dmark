@@ -4,6 +4,8 @@
     "composite": true,
     "declarationMap": true,
     "declaration": true,
+    "declarationDir": "types",
+    "outDir": "types",
     "allowJs": true,
     "emitDeclarationOnly": true,
   },

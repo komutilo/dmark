@@ -1,1 +1,5 @@
 node_modules/
+/coverage/
+junit.xml
+*.log
+tsconfig.tsbuildinfo

@@ -6,33 +6,102 @@ const yaml = require('js-yaml');
 const rimraf = require('rimraf');
 const fse = require('fs-extra');
 const mkdirp = require('mkdirp');
-const execCmd = require('./execCmd');
+const { execCmd } = require('../execCmd');
+const {
+  InvalidConfigFileError,
+  NoConfigProvidedError,
+  InvalidStackNameError,
+  InvalidStageNameError,
+  MissingStackPathError,
+  InvalidStackPathError,
+} = require('../errors');
+const { dmarkConfigSchemaValidator } = require('./dmarkConfigSchemaValidator');
+
+/**
+ * @typedef {Object} LocalConfig
+ * @property {string} path
+ */
+
+/**
+ * @typedef {Object} StageConfig
+ * @property {Object.<string,string> | undefined} vars
+ * @property {Object.<string,string> | undefined} backendConfig
+ */
+
+/**
+ * @typedef {Object} GlobalStackConfig
+ * @property {LocalConfig | boolean | undefined} local
+ * @property {Object.<string, StageConfig> | undefined} stages
+ * @property {string[] | undefined} labels
+ */
+
+/**
+ * @typedef {GlobalStackConfig} StackConfig
+ * @property {string} path
+ * @property {string | undefined} description
+ * @property {number | undefined} order
+ */
+
+/**
+ * @typedef {Object} DmarkConfig
+ * @property {GlobalStackConfig | undefined} globals
+ * @property {Object.<string, StackConfig>} stacks
+ */
+
+/**
+ * @typedef {Object} DmarkOptions
+ * @property {string[]} stacks
+ * @property {string[]} stages
+ * @property {string[]} labels
+ * @property {boolean} fmt
+ * @property {boolean} initUpgrade
+ * @property {boolean} initMigrateState
+ * @property {boolean} autoApprove
+ * @property {boolean} noInit
+ * @property {string[]} rest
+ */
 
 const ALL_STAGES = '__all__';
 
+/**
+ * Return the config object from a config file in the target project.
+ * Default path is: ./dmark.config.yaml
+ *
+ * @param {string | undefined} configPath The custom config path.
+ * @returns {DmarkConfig} The config loaded object.
+ * @throws {InvalidConfigFileError} If a config file is not found.
+ */
 function getConfig(configPath) {
   const pwd = pathResolve(process.cwd());
   const defaultConfigPath = pathResolve(pwd, 'dmark.config.yaml');
   const configFilePath = configPath && configPath?.length >= 1 ? pathResolve(configPath[0]) : defaultConfigPath;
-  const noFileError = new Error(
-    `The config file "${configFilePath}" don't exists.`,
-  );
 
   if (fs.existsSync(configFilePath)) {
     const contents = fs.readFileSync(configFilePath, 'utf8');
-
-    return yaml.load(contents);
+    const config = yaml.load(contents);
+    dmarkConfigSchemaValidator(config);
+    return config;
   } else {
-    throw noFileError;
+    throw new InvalidConfigFileError(configFilePath);
   }
 }
 
+/**
+ * Get stack names to execute command on.
+ * Return all stack names if no one is provided.
+ *
+ * @param {DmarkConfig} config The config object.
+ * @param {string[] | undefined} stacks The stacks input.
+ * @returns {string[]} The stacks names.
+ * @throws {NoConfigProvidedError} if no config was provided.
+ * @throws {InvalidStackNameError} if a provided stack name from input is not compatible with the ones in the config.
+ */
 function getStacks(config, stacks) {
   if (!config) {
-    throw new Error(
-      'Execution error, no config provided to getStacks function.',
-    );
+    throw new NoConfigProvidedError('getStacks');
   }
+
+  dmarkConfigSchemaValidator(config);
 
   stacks = stacks && Array.isArray(stacks) && stacks.length > 0
     ? stacks
@@ -40,13 +109,19 @@ function getStacks(config, stacks) {
 
   for (const stack of stacks) {
     if (!Object.keys(config.stacks).includes(stack)) {
-      throw new Error(`The stack "${stack}" don't exists in the config file.`);
+      throw new InvalidStackNameError(stack);
     }
   }
 
   return [...new Set(stacks)];
 }
 
+/**
+ * Get input labels to filter or return none.
+ *
+ * @param {string[] | undefined} labels The input labels.
+ * @returns {string[]} Input labels or no one.
+ */
 function getLabels(labels) {
   labels = labels && Array.isArray(labels) && labels.length > 0
     ? labels
@@ -57,10 +132,10 @@ function getLabels(labels) {
 
 function getValidStages(config) {
   if (!config) {
-    throw new Error(
-      'Execution error, no config provided to getValidStages function.',
-    );
+    throw new NoConfigProvidedError('getValidStages');
   }
+
+  dmarkConfigSchemaValidator(config);
 
   let validStages = [];
 
@@ -79,12 +154,22 @@ function getValidStages(config) {
   return [...new Set(validStages)].filter((vs) => vs !== ALL_STAGES);
 }
 
+/**
+ * Get stage names to execute command on.
+ * Return all stage names if no one is provided.
+ *
+ * @param {DmarkConfig} config The config object.
+ * @param {string[] | undefined} stages The stages input.
+ * @returns {string[]} The stages names.
+ * @throws {NoConfigProvidedError} if no config was provided.
+ * @throws {InvalidStageNameError} if a provided stage name from input is not compatible with the ones in the config.
+ */
 function getStages(config, stages) {
   if (!config) {
-    throw new Error(
-      'Execution error, no config provided to getStages function.',
-    );
+    throw new NoConfigProvidedError('getStages');
   }
+
+  dmarkConfigSchemaValidator(config);
 
   const validStages = getValidStages(config);
 
@@ -94,7 +179,7 @@ function getStages(config, stages) {
 
   for (const stage of stages) {
     if (!validStages.includes(stage)) {
-      throw new Error(`The stage "${stage}" is not a valid stage name.`);
+      throw new InvalidStageNameError(stage);
     }
   }
 
@@ -150,13 +235,13 @@ function stackOnConfig(config, stackName) {
 
 function getStackFolder(config, stackName) {
   if (!config.stacks[stackName].path) {
-    throw new Error(`Missing "path" field in the "${stackName}" stack.`);
+    throw new MissingStackPathError(stackName);
   }
 
   const stackFolder = pathResolve(config.stacks[stackName].path);
 
   if (!fs.existsSync(stackFolder)) {
-    throw new Error(`The path "${stackFolder}" didn't exists.`);
+    throw new InvalidStackPathError(stackFolder);
   }
 
   return stackFolder;
@@ -368,7 +453,16 @@ function getLocal(config, stackName) {
   return local;
 }
 
+/**
+ * Execute a terraform command.
+ *
+ * @param {string} cmd The command to execute.
+ * @param {DmarkConfig} config The config object.
+ * @param {DmarkOptions} opts The options.
+ */
 async function executeCommand(cmd, config, opts) {
+  dmarkConfigSchemaValidator(config);
+
   const stacks = reOrderStacks(config, opts?.stacks);
   const commandsQueue = [];
 
@@ -396,6 +490,7 @@ async function executeCommand(cmd, config, opts) {
       const local = getLocal(config, stackName, stageName);
       let execInit = [];
       const isLocal = local ? true : false;
+      const rest = opts?.rest && Array.isArray(opts?.rest) ? opts.rest : [];
 
       if (!opts?.noInit) {
         if (isLocal) {
@@ -418,8 +513,8 @@ async function executeCommand(cmd, config, opts) {
           execInit.push('-upgrade');
         }
 
-        if (cmd === 'init' && opts?.rest.length > 0) {
-          execInit.concat(opts.rest);
+        if (cmd === 'init' && rest.length > 0) {
+          execInit.concat(rest);
         }
 
         commandsQueue.push({
@@ -441,8 +536,8 @@ async function executeCommand(cmd, config, opts) {
       if (opts?.fmt) {
         const execFmt = [...vars, 'terraform', `-chdir=${stackFolder}`, 'fmt'];
 
-        if (cmd === 'fmt' && opts?.rest.length > 0) {
-          execFmt.concat(opts.rest);
+        if (cmd === 'fmt' && rest.length > 0) {
+          execFmt.concat(rest);
         }
 
         commandsQueue.push({ args: execFmt });
@@ -455,8 +550,8 @@ async function executeCommand(cmd, config, opts) {
           exec.push('-auto-approve');
         }
 
-        if (opts?.rest.length > 0) {
-          exec.concat(opts.rest);
+        if (rest.length > 0) {
+          exec.concat(rest);
         }
 
         commandsQueue.push({

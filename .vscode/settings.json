@@ -7,6 +7,11 @@
     "source.fixAll.eslint": true
   },
   "eslint.validate": [
-    "javascript"
-  ]
+    "javascript",
+    "typescript"
+  ],
+  "eslint.format.enable": true,
+  "eslint.options": {
+    "overrideConfigFile": "config/.eslintrc"
+  }
 }
