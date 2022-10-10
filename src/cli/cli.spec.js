@@ -1,38 +1,6 @@
 const mockArgv = require('mock-argv');
 const { parseArgv } = require('./cli');
-
-const cliConfig = {
-  validFlags: [
-    {
-      name: 'foo-flag',
-      description: 'A foo flag.',
-    },
-    {
-      name: 'bar-flag',
-      shortCut: 'b',
-      description: 'A bar flag.',
-    },
-    {
-      name: 'baz-flag',
-      shortCut: 'z',
-      description: 'A baz flag.',
-    },
-  ], validOptions: [
-    {
-      name: '--foo-opt',
-      description: 'A foo option.',
-    },
-    {
-      name: 'bar-opt',
-      shortCut: 'a',
-      description: 'A bar option.',
-    },
-    {
-      name: 'baz-opt',
-      description: 'A baz option.',
-    },
-  ],
-};
+const { cliConfig } = require('./cliConfig.mock');
 
 describe('parseArgv function', () => {
   it('should cmd be the first item in argv', () => {
@@ -83,5 +51,16 @@ describe('parseArgv function', () => {
     });
 
     expect(cliResult.rest).toStrictEqual(['--ted-flag', '--ted-opt', 'world']);
+  });
+
+  it('should validate ./src/cliConfig.js with no errors when call parseArgv', () => {
+    const validateCliConfig = () => {
+      mockArgv(['dmark', 'plan', '--stack', 'foo', '--stage', 'bar', '--refresh'], () => {
+        const { cliConfig: config } = require('../cliConfig');
+        parseArgv(config);
+      });
+    };
+
+    expect(validateCliConfig).not.toThrowError();
   });
 });

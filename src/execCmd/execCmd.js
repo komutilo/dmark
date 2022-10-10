@@ -8,6 +8,12 @@ async function spawn(command, args, options) {
   return await cp.spawn(parsed.command, parsed.args, parsed.options);
 }
 
+/**
+ * Execute an asynchronous cli command as sub process.
+ *
+ * @param {string[]} args An array of cli args.
+ * @returns {import("promisify-child-process").ChildProcessPromise | null} The cli results or null.
+ */
 async function execCmd(args) {
   const envSetterRegex = /(\w+)=('(.*)'|"(.*)"|(.*))/;
   const envSetters = {};
@@ -65,10 +71,13 @@ async function execCmd(args) {
         shell: true,
         env,
       },
+      {
+        allowUnmatched: true,
+      },
     );
   }
 
   return null;
 }
 
-module.exports = execCmd;
+module.exports = { execCmd };

@@ -1,4 +1,38 @@
 const columnify = require('columnify');
+const { cliConfigSchema } = require('./cliConfig.schema');
+const { schemaValidation } = require('../utils');
+const {
+  InvalidCliArgumentError,
+  InvalidFirstArgumentError,
+} = require('../errors');
+
+/**
+ * @typedef {Object} FlagInput
+ * @property {string[] | string} name
+ * @property {string[] | string | undefined} shortCut
+ * @property {string | undefined} description
+ */
+
+/**
+ * @typedef {Object} OptionInput
+ * @property {string[] | string} name
+ * @property {string[] | string | undefined} shortCut
+ * @property {string | undefined} description
+ */
+
+/**
+ * @typedef {Object} CliConfig
+ * @property {FlagInput[] | undefined} validFlags
+ * @property {OptionInput[] | undefined} validOptions
+ */
+
+/**
+ * @typedef {Object} Cli
+ * @property {string} cmd
+ * @property {Object.<string, boolean>} flags
+ * @property {Object.<string, unknown>} options
+ * @property {string[]} rest
+ */
 
 function removeArgPrefix(arg) {
   const pattern = new RegExp(/^([-]{1,2}|)(.*)$/gm);
@@ -13,7 +47,7 @@ function removeArgPrefix(arg) {
 
 function fixArgs(name, shortCut) {
   if (typeof name !== 'string' && !Array.isArray(name)) {
-    throw new Error(`${name} is not a valid CLI argument.`);
+    throw new InvalidCliArgumentError(name);
   }
 
   let shortCuts = [];
@@ -78,14 +112,18 @@ options:
 
   const columnsData = {};
 
-  for (const validOption of validOptions) {
-    const option = fixArgs(validOption.name, validOption.shortCut);
-    columnsData[option.join(',')] = validOption.description;
+  if (validOptions) {
+    for (const validOption of validOptions) {
+      const option = fixArgs(validOption.name, validOption.shortCut);
+      columnsData[option.join(',')] = validOption.description;
+    }
   }
 
-  for (const validFlag of validFlags) {
-    const flag = fixArgs(validFlag.name, validFlag.shortCut);
-    columnsData[flag.join(',')] = validFlag.description;
+  if (validFlags) {
+    for (const validFlag of validFlags) {
+      const flag = fixArgs(validFlag.name, validFlag.shortCut);
+      columnsData[flag.join(',')] = validFlag.description;
+    }
   }
 
   helpText += `${columnify(columnsData, { columns: ['OPTION', 'DESCRIPTION'] })}\n`;
@@ -144,7 +182,18 @@ function getOptions(validOptions, argv) {
   return { options, indexes };
 }
 
-function parseArgv({ validFlags, validOptions }) {
+/**
+ * Parse process.argv values using a cli config for arguments validation.
+ *
+ * @param {CliConfig} config The config for args validation.
+ * @returns {Cli} The parsed Cli object.
+ * @throws {InvalidFirstArgumentError} If the first argument is not a command.
+ */
+function parseArgv(config) {
+  const { validFlags, validOptions } = config;
+
+  schemaValidation(config, cliConfigSchema, 'cli.config');
+
   if (process.argv.length < 3) {
     showHelp(null, validFlags, validOptions);
   }
@@ -152,7 +201,7 @@ function parseArgv({ validFlags, validOptions }) {
   let argv = [...process.argv.slice(2)];
 
   if (argv[0][0] === '-') {
-    throw new Error('The first argument should be a command...');
+    throw new InvalidFirstArgumentError();
   }
 
   const cmd = argv[0].toString().toLowerCase();
