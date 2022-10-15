@@ -1,5 +1,17 @@
+# npm
 node_modules/
+
+# pnpm
+yarn.lock
+package-lock.json
+
+# test
 /coverage/
 junit.xml
-*.log
+
+# typescript
 tsconfig.tsbuildinfo
+
+# misc
+*.log
+.DS_Store
