@@ -6,9 +6,15 @@
 Terraform wrapper for multi-stage and multi-stack that adds only a config file. Perfect for no HCP projects.
 
 ## Dependencies
-- Node.js + npm
-- pnpm
 
+
+**Runtime**  
+- Node.js + npm
+
+
+**Development**  
+- pnpm
+---
 ## How to install
 ```sh
 npm i -g dmark
