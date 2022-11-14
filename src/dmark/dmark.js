@@ -482,7 +482,10 @@ async function executeCommand(cmd, config, opts) {
     if (!stackPass) continue;
 
     for (const stageName of opts?.stages || []) {
-      if (ignoreStage(config, stackName, stageName)) continue;
+      if (ignoreStage(config, stackName, stageName)) {
+        console.log(`Stage "${stageName}" ignored for the "${stackName}" stack...`);
+        continue;
+      }
 
       const stackFolder = getStackFolder(config, stackName);
       const vars = getVars(config, stackName, stageName);
