@@ -58,6 +58,7 @@ const { dmarkConfigSchemaValidator } = require('./dmarkConfigSchemaValidator');
  * @property {boolean} initMigrateState
  * @property {boolean} autoApprove
  * @property {boolean} noInit
+ * @property {boolean} deleteLock
  * @property {string[]} rest
  */
 
@@ -417,6 +418,13 @@ function saveLocalState(config, stackName, stageName) {
   }
 }
 
+function deleteLockFile(config, stackName) {
+  const pwd = pathResolve(process.cwd());
+  const stackFolder = getStackFolder(config, stackName);
+  const lockFilePath = pathResolve(pwd, stackFolder, '.terraform.lock.hcl');
+  rimraf(lockFilePath, () => console.log(`"${lockFilePath}" removed...`));
+}
+
 function getStackLabels(config, stackName) {
   let labels = [];
 
@@ -531,6 +539,9 @@ async function executeCommand(cmd, config, opts) {
             } else {
               const localStatePath = pathResolve(stackFolder, '.terraform', 'terraform.tfstate');
               if (fs.existsSync(localStatePath)) fs.unlinkSync(localStatePath);
+            }
+            if (opts?.deleteLock) {
+              deleteLockFile(config, stackName);
             }
           },
         });
