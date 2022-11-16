@@ -23,6 +23,10 @@ const cliConfig = {
       name: 'no-init',
       description: 'all commands run the init first for setup the backend-config parameters, if for some reason this is not necessary add this flag',
     },
+    {
+      name: 'delete-lock',
+      description: 'force ".terraform.lock.hcl" file to be deleted before run terraform init, it will delete for each stack and stage call',
+    },
   ],
   validOptions: [
     {
