@@ -28,11 +28,11 @@ Example with an AWS S3 bucket:
 The `./src/a-bucket/main.tf` file:
 ```hcl
 terraform {
-  required_version = ">= 1.3.0"
+  required_version = ">= 1.3.4"
 
   required_providers {
     aws = {
-      version = "4.32.0"
+      version = "4.39.0"
       source  = "hashicorp/aws"
     }
   }

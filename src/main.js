@@ -25,6 +25,7 @@ function main() {
     initMigrateState: flags['migrate-state'],
     autoApprove: flags['auto-approve'],
     noInit: flags['no-init'],
+    deleteLock: flags['delete-lock'],
     rest,
   });
 }
