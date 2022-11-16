@@ -429,7 +429,7 @@ function getStackLabels(config, stackName) {
   let labels = [];
 
   if (config.globals?.labels) {
-    labels.concat(config.globals.labels);
+    labels = labels.concat(config.globals.labels);
   }
 
   if (stackOnConfig(config, stackName)) {
@@ -525,7 +525,7 @@ async function executeCommand(cmd, config, opts) {
         }
 
         if (cmd === 'init' && rest.length > 0) {
-          execInit.concat(rest);
+          execInit = execInit.concat(rest);
         }
 
         commandsQueue.push({
@@ -548,24 +548,24 @@ async function executeCommand(cmd, config, opts) {
       }
 
       if (opts?.fmt) {
-        const execFmt = [...vars, 'terraform', `-chdir=${stackFolder}`, 'fmt'];
+        let execFmt = [...vars, 'terraform', `-chdir=${stackFolder}`, 'fmt'];
 
         if (cmd === 'fmt' && rest.length > 0) {
-          execFmt.concat(rest);
+          execFmt = execFmt.concat(rest);
         }
 
         commandsQueue.push({ args: execFmt });
       }
 
       if (cmd !== 'init' && cmd !== 'fmt') {
-        const exec = [...vars, 'terraform', `-chdir=${stackFolder}`, cmd];
+        let exec = [...vars, 'terraform', `-chdir=${stackFolder}`, cmd];
 
         if (opts?.autoApprove && cmd !== 'plan') {
           exec.push('-auto-approve');
         }
 
         if (rest.length > 0) {
-          exec.concat(rest);
+          exec = exec.concat(rest);
         }
 
         commandsQueue.push({

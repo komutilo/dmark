@@ -1,6 +1,6 @@
 {
   "name": "dmark",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Terraform wrapper for multi-stage and multi-stack which only add a config file. Perfect for no HCP projects.",
   "main": "src/index.js",
   "types": "./types/**/*.d.ts",
