@@ -32,6 +32,7 @@ export type DmarkOptions = {
     initMigrateState: boolean;
     autoApprove: boolean;
     noInit: boolean;
+    deleteLock: boolean;
     rest: string[];
 };
 /**
