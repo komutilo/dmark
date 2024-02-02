@@ -200,7 +200,7 @@ function parseArgv(config) {
 
   let argv = [...process.argv.slice(2)];
 
-  if (argv[0][0] === '-' && (argv[0] !== '--help' || argv[0] !== '-h')) {
+  if (!(argv[0] !== '--help' || argv[0] !== '-h') && argv[0][0] === '-') {
     throw new InvalidFirstArgumentError();
   }
 

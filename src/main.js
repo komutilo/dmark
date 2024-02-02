@@ -1,3 +1,4 @@
+const chalk = require('chalk');
 const { parseArgv } = require('./cli');
 const {
   getConfig,
@@ -9,25 +10,30 @@ const {
 const { cliConfig } = require('./cliConfig');
 
 function main() {
-  const { cmd, flags, options, rest } = parseArgv(cliConfig);
+  try {
+    const { cmd, flags, options, rest } = parseArgv(cliConfig);
 
-  const config = getConfig(options?.config);
-  const stacks = getStacks(config, options?.stack);
-  const stages = getStages(config, options?.stage);
-  const labels = getLabels(options?.label);
+    const config = getConfig(options?.config);
+    const stacks = getStacks(config, options?.stack);
+    const stages = getStages(config, options?.stage);
+    const labels = getLabels(options?.label);
 
-  executeCommand(cmd, config, {
-    stacks,
-    stages,
-    labels,
-    fmt: flags?.fmt,
-    initUpgrade: flags?.upgrade,
-    initMigrateState: flags['migrate-state'],
-    autoApprove: flags['auto-approve'],
-    noInit: flags['no-init'],
-    deleteLock: flags['delete-lock'],
-    rest,
-  });
+    executeCommand(cmd, config, {
+      stacks,
+      stages,
+      labels,
+      fmt: flags?.fmt,
+      initUpgrade: flags?.upgrade,
+      initMigrateState: flags['migrate-state'],
+      autoApprove: flags['auto-approve'],
+      noInit: flags['no-init'],
+      deleteLock: flags['delete-lock'],
+      rest,
+    });
+  } catch (err) {
+    console.error(chalk.red(`${err.name}: ${err.message}`));
+    throw err;
+  }
 }
 
 module.exports = { main };

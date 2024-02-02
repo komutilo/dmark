@@ -14,6 +14,7 @@ const {
   InvalidStageNameError,
   MissingStackPathError,
   InvalidStackPathError,
+  MissingStageNameError,
 } = require('../errors');
 const { dmarkConfigSchemaValidator } = require('./dmarkConfigSchemaValidator');
 
@@ -122,6 +123,7 @@ function getStacks(config, stacks) {
  *
  * @param {string[] | undefined} labels The input labels.
  * @returns {string[]} Input labels or no one.
+ * @throws {MissingStageNameError} if the config don't contains any valid stage defined.
  */
 function getLabels(labels) {
   labels = labels && Array.isArray(labels) && labels.length > 0
@@ -152,7 +154,13 @@ function getValidStages(config) {
     }
   }
 
-  return [...new Set(validStages)].filter((vs) => vs !== ALL_STAGES);
+  validStages = [...new Set(validStages)].filter((vs) => vs !== ALL_STAGES);
+
+  if (validStages?.length < 1) {
+    throw new MissingStageNameError();
+  }
+
+  return validStages;
 }
 
 /**
@@ -163,6 +171,7 @@ function getValidStages(config) {
  * @param {string[] | undefined} stages The stages input.
  * @returns {string[]} The stages names.
  * @throws {NoConfigProvidedError} if no config was provided.
+ * @throws {MissingStageNameError} if the config don't contains any stage defined.
  * @throws {InvalidStageNameError} if a provided stage name from input is not compatible with the ones in the config.
  */
 function getStages(config, stages) {
