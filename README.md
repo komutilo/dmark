@@ -10,6 +10,7 @@ Terraform wrapper for multi-stage and multi-stack that adds only a config file. 
 
 **Runtime**  
 - Node.js + npm
+- Terraform >= 0.14.0
 
 
 **Development**  

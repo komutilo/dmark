@@ -1,0 +1,15 @@
+globals:
+  stages:
+    dev: {}
+    staging: {}
+    prod: {}
+
+stacks:
+  testStack:
+    path: ./mocks/terraform/testStack
+    local:
+      path: ./data/terraform
+    stages:
+      __all__:
+        vars:
+          bucket_prefix: test
