@@ -1,6 +1,6 @@
 {
   "name": "dmark",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Terraform wrapper for multi-stage and multi-stack which only add a config file. Perfect for no HCP projects.",
   "main": "src/index.js",
   "types": "./types/**/*.d.ts",
@@ -16,7 +16,8 @@
     "test-coverage": "pnpm test-script --coverage",
     "test-watch": "pnpm test-script --watch",
     "test-serve-report": "cross-env serve ./coverage/lcov-report",
-    "types": "tsc"
+    "types": "tsc",
+    "dmark": "node ./src/index.js"
   },
   "keywords": [
     "terraform",
@@ -55,8 +56,13 @@
   },
   "license": "MIT",
   "engines": {
-    "node": "~18.18.1",
-    "npm": "~10.2.1"
+    "node": "~20.11.0",
+    "npm": "~10.4.0"
+  },
+  "volta": {
+    "node": "20.11.0",
+    "npm": "10.4.0",
+    "pnpm": "8.15.1"
   },
   "dependencies": {
     "chalk": "4.1.0",

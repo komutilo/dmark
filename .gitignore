@@ -15,3 +15,9 @@ tsconfig.tsbuildinfo
 # misc
 *.log
 .DS_Store
+
+# terraform
+.terraform/
+mocks/terraform/**/terraform.tfstate
+mocks/terraform/**/terraform.tfstate.*
+mocks/terraform/**/.terraform.tfstate.*
