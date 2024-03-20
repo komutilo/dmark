@@ -6,6 +6,7 @@ const yaml = require('js-yaml');
 const rimraf = require('rimraf');
 const fse = require('fs-extra');
 const mkdirp = require('mkdirp');
+const chalk = require('chalk');
 const { execCmd } = require('../execCmd');
 const {
   InvalidConfigFileError,
@@ -76,7 +77,10 @@ const ALL_STAGES = '__all__';
 function getConfig(configPath) {
   const pwd = pathResolve(process.cwd());
   const defaultConfigPath = pathResolve(pwd, 'dmark.config.yaml');
-  const configFilePath = configPath && configPath?.length >= 1 ? pathResolve(configPath[0]) : defaultConfigPath;
+  const configFilePath =
+    configPath && configPath?.length >= 1
+      ? pathResolve(configPath[0])
+      : defaultConfigPath;
 
   if (fs.existsSync(configFilePath)) {
     const contents = fs.readFileSync(configFilePath, 'utf8');
@@ -105,9 +109,10 @@ function getStacks(config, stacks) {
 
   dmarkConfigSchemaValidator(config);
 
-  stacks = stacks && Array.isArray(stacks) && stacks.length > 0
-    ? stacks
-    : Object.keys(config.stacks);
+  stacks =
+    stacks && Array.isArray(stacks) && stacks.length > 0
+      ? stacks
+      : Object.keys(config.stacks);
 
   for (const stack of stacks) {
     if (!Object.keys(config.stacks).includes(stack)) {
@@ -126,9 +131,7 @@ function getStacks(config, stacks) {
  * @throws {MissingStageNameError} if the config don't contains any valid stage defined.
  */
 function getLabels(labels) {
-  labels = labels && Array.isArray(labels) && labels.length > 0
-    ? labels
-    : [];
+  labels = labels && Array.isArray(labels) && labels.length > 0 ? labels : [];
 
   return [...new Set(labels)];
 }
@@ -471,6 +474,42 @@ function getLocal(config, stackName) {
 }
 
 /**
+ * List the possibles commands to be called with the current config.
+ *
+ * @param {DmarkConfig} config The config object.
+ * @param {string} cmd A Terraform command.
+ */
+function listCommands(config, cmd) {
+  const cmdList = [];
+
+  for (let i = 0; i < Object.values(config.stacks).length; i++) {
+    const stack =  Object.values(config.stacks)[i];
+    const stackName = Object.keys(config.stacks)[i];
+    const ignoreStages = stack?.ignoreStages || [];
+    const configStages = Object.keys(config?.globals?.stages) || [];
+    let stages = [];
+
+    for (let stage of configStages) {
+      if (!ignoreStages.includes(stage) && stage !== '__all__') {
+        stages.push(stage);
+      }
+    }
+
+    for (let stage of stages) {
+      cmdList.push('echo');
+      cmdList.push(chalk.green(`dmark ${cmd} --stack ${stackName} --stage ${stage}`));
+      cmdList.push('&&');
+    }
+  }
+
+  if (cmdList.length > 0 && cmdList[cmdList.length - 1] === '&&') {
+    cmdList.pop();
+  }
+
+  return cmdList;
+}
+
+/**
  * Execute a terraform command.
  *
  * @param {string} cmd The command to execute.
@@ -480,10 +519,12 @@ function getLocal(config, stackName) {
 async function executeCommand(cmd, config, opts) {
   dmarkConfigSchemaValidator(config);
 
+  const cmdIsList = cmd === 'list';
   const stacks = reOrderStacks(config, opts?.stacks);
   const commandsQueue = [];
 
   for (const stackName of stacks) {
+    if (cmdIsList) break;
     if (!stackOnConfig(config, stackName)) continue;
 
     const labels = getStackLabels(config, stackName);
@@ -500,7 +541,9 @@ async function executeCommand(cmd, config, opts) {
 
     for (const stageName of opts?.stages || []) {
       if (ignoreStage(config, stackName, stageName)) {
-        console.log(`Stage "${stageName}" ignored for the "${stackName}" stack...`);
+        console.log(
+          `Stage "${stageName}" ignored for the "${stackName}" stack...`,
+        );
         continue;
       }
 
@@ -546,7 +589,11 @@ async function executeCommand(cmd, config, opts) {
             if (isLocal) {
               loadLocalState(config, stackName, stageName);
             } else {
-              const localStatePath = pathResolve(stackFolder, '.terraform', 'terraform.tfstate');
+              const localStatePath = pathResolve(
+                stackFolder,
+                '.terraform',
+                'terraform.tfstate',
+              );
               if (fs.existsSync(localStatePath)) fs.unlinkSync(localStatePath);
             }
             if (opts?.deleteLock) {
@@ -587,6 +634,22 @@ async function executeCommand(cmd, config, opts) {
     }
   }
 
+  if (cmdIsList) {
+    const planList = listCommands(config, 'plan');
+    const applyList = listCommands(config, 'apply');
+    commandsQueue.push({
+      args: [
+        'echo', '--------------------------------------------------------------------------', '&&',
+        'echo', 'List of all possible plan commands to be called with this project config:', '&&',
+        'echo', '--------------------------------------------------------------------------', '&&',
+        ...planList, '&&',
+        'echo', '--------------------------------------------------------------------------', '&&',
+        'echo', 'List of all possible apply commands to be called with this project config:', '&&',
+        'echo', '--------------------------------------------------------------------------', '&&',
+        ...applyList],
+    });
+  }
+
   commandsQueue.reverse();
 
   const recursiveQueue = async () => {
@@ -595,7 +658,9 @@ async function executeCommand(cmd, config, opts) {
 
     if (pre) pre();
 
-    console.log(args.join(' '));
+    if (args[0] !== 'echo') {
+      console.log(args.join(' '));
+    }
 
     const proc = await execCmd(args);
 
