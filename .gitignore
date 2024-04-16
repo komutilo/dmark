@@ -12,6 +12,9 @@ junit.xml
 # typescript
 tsconfig.tsbuildinfo
 
+# terraform
+.terraform/
+
 # misc
 *.log
 .DS_Store
