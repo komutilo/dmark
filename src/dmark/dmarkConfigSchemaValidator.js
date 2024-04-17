@@ -33,10 +33,10 @@ function typeMismatchError(path, types) {
   }], 'dmark.config');
 }
 
-function invalidValueError(path, values) {
+function invalidValueError(fieldName, values) {
   throw new InvalidSchemaError([{
-    path,
-    message: `Invalid value for ${path} field in the config file. Should be one of those values: ${values.join(', ')}`,
+    path: fieldName,
+    message: `Invalid value for "${fieldName}" field in the config file. Should be one of those values: ${values.join(', ')}`,
   }], 'dmark.config');
 }
 
@@ -205,7 +205,7 @@ function validateRunner(runner) {
     typeMismatchError(runner, ['string']);
   }
   if (!VALID_RUNNERS.includes(runner)) {
-    invalidValueError(runner, VALID_RUNNERS);
+    invalidValueError('runner', VALID_RUNNERS);
   }
   return true;
 }
