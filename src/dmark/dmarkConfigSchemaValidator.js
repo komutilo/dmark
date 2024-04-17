@@ -17,6 +17,8 @@ const LOCAL_SCHEMA = {
 
 const VALID_GLOBAL_FIELDS = ['local', 'stages', 'labels'];
 
+const VALID_RUNNERS = ['terraform', 'tofu'];
+
 function missingError(path) {
   throw new InvalidSchemaError([{
     path,
@@ -28,6 +30,13 @@ function typeMismatchError(path, types) {
   throw new InvalidSchemaError([{
     path,
     message: `Invalid type for ${path} field in the config file. Should be one of types: ${types.join(', ')}`,
+  }], 'dmark.config');
+}
+
+function invalidValueError(path, values) {
+  throw new InvalidSchemaError([{
+    path,
+    message: `Invalid value for ${path} field in the config file. Should be one of those values: ${values.join(', ')}`,
   }], 'dmark.config');
 }
 
@@ -185,6 +194,23 @@ function validateStacks(stacks) {
 }
 
 /**
+ * Validate the runner field.
+ *
+ * @param {string} runner The runner field value.
+ * @returns {boolean} If the runner field in config is valid.
+ * @throws {InvalidSchemaError} Throws an error if the field mismatch a type or value is not in valid list.
+ */
+function validateRunner(runner) {
+  if (typeof runner !== 'string') {
+    typeMismatchError(runner, ['string']);
+  }
+  if (!VALID_RUNNERS.includes(runner)) {
+    invalidValueError(runner, VALID_RUNNERS);
+  }
+  return true;
+}
+
+/**
  * Validate the dmark config file schema.
  *
  * @param {import("./dmark").DmarkConfig} config The config object.
@@ -196,6 +222,10 @@ function dmarkConfigSchemaValidator(config, opts) {
   const forceValidation = opts?.forceValidation || false;
 
   if (VALID === true && !forceValidation) return VALID;
+
+  if (config?.runner) {
+    VALID = validateRunner(config?.runner);
+  }
 
   if (config?.globals) {
     VALID = validateGlobalStack(config?.globals, 'globals');
