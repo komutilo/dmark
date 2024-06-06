@@ -1,23 +1,45 @@
-# npm
+# dependencies
 node_modules/
-
-# pnpm
-yarn.lock
+jspm_packages/
+.pnp/
+.yarn/
+venv/
+.venv/
 package-lock.json
+yarn.lock
+.pnp.*
+npm-shrinkwrap.json
+bun.lockb
 
 # test
 /coverage/
+/tests_report/
+.pytest_cache/
+.coverage
 junit.xml
 
-# typescript
-tsconfig.tsbuildinfo
-
-# terraform
-.terraform/
+# distribution
+build/
+.build/
+dist/
+out/
+release/
+*.tsbuildinfo
+*.egg-info/
+*.egg
 
 # misc
-*.log
+__pycache__/
 .DS_Store
+*.pem
+*.log
+*.log*
+*.deb
+.env
+*.zip
+*.db
+*.db-*
+*.pyc
 
 # terraform
 .terraform/

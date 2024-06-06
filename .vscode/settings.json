@@ -1,14 +1,17 @@
 {
+  "editor.formatOnSave": true,
+  "editor.formatOnPaste": false,
+  "editor.formatOnType": false,
   "files.exclude": {
     "**/.git": true,
     "**/.DS_Store": true
   },
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": "explicit"
+    "source.fixAll.eslint": "always"
   },
   "eslint.validate": [
-    "javascript",
-    "typescript"
+    "typescript",
+    "javascript"
   ],
   "eslint.format.enable": true,
   "eslint.options": {
