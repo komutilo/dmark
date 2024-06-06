@@ -1,17 +1,29 @@
 {
+  "editor.formatOnSave": true,
+  "editor.formatOnPaste": false,
+  "editor.formatOnType": false,
   "files.exclude": {
     "**/.git": true,
     "**/.DS_Store": true
   },
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": "explicit"
+    "source.fixAll.eslint": "always"
   },
   "eslint.validate": [
-    "javascript",
-    "typescript"
+    "typescript",
+    "javascript"
   ],
   "eslint.format.enable": true,
   "eslint.options": {
     "overrideConfigFile": "config/.eslintrc"
+  },
+  "[terraform]": {
+    "editor.formatOnSave": true,
+    "editor.formatOnPaste": true,
+    "editor.defaultFormatter": "hashicorp.terraform",
+    "editor.tabSize": 2
+  },
+  "[terraform-vars]": {
+    "editor.tabSize": 2
   }
 }
