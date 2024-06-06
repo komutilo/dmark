@@ -1,8 +1,16 @@
+runner: terraform
+
 globals:
   stages:
-    dev: {}
-    staging: {}
-    prod: {}
+    dev:
+      vars:
+        stage: dev
+    staging:
+      vars:
+        stage: staging
+    prod:
+      vars:
+        stage: prod
 
 stacks:
   testStack:

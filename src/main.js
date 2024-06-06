@@ -5,6 +5,7 @@ const {
   getStacks,
   getLabels,
   getStages,
+  getRunner,
   executeCommand,
 } = require('./dmark');
 const { cliConfig } = require('./cliConfig');
@@ -17,11 +18,13 @@ function main() {
     const stacks = getStacks(config, options?.stack);
     const stages = getStages(config, options?.stage);
     const labels = getLabels(options?.label);
+    const runner = getRunner(config);
 
     executeCommand(cmd, config, {
       stacks,
       stages,
       labels,
+      runner,
       fmt: flags?.fmt,
       initUpgrade: flags?.upgrade,
       initMigrateState: flags['migrate-state'],

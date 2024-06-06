@@ -9,8 +9,8 @@ Terraform wrapper for multi-stage and multi-stack that adds only a config file. 
 
 
 **Runtime**  
-- Node.js + npm
-- Terraform >= 0.14.0
+- ***Node.js*** + ***npm***
+- ***Terraform >= 0.14.0*** or ***[OpenTofu](https://opentofu.org/)***
 
 
 **Development**  
@@ -59,6 +59,8 @@ The `./dmark.config.yaml` file:
 
 
 ```yaml
+runner: tofu
+
 globals:
   stages:
     __all__:

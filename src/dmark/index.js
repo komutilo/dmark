@@ -3,6 +3,7 @@ const {
   getLabels,
   getStacks,
   getStages,
+  getRunner,
   executeCommand,
 } = require('./dmark');
 
@@ -11,5 +12,6 @@ module.exports = {
   getLabels,
   getStacks,
   getStages,
+  getRunner,
   executeCommand,
 };

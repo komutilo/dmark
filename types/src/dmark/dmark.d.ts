@@ -18,6 +18,7 @@ export type GlobalStackConfig = {
 };
 export type StackConfig = GlobalStackConfig;
 export type DmarkConfig = {
+    runner: string | undefined;
     globals: GlobalStackConfig | undefined;
     stacks: {
         [x: string]: StackConfig;
@@ -27,6 +28,7 @@ export type DmarkOptions = {
     stacks: string[];
     stages: string[];
     labels: string[];
+    runner: string | undefined;
     fmt: boolean;
     initUpgrade: boolean;
     initMigrateState: boolean;
@@ -49,6 +51,7 @@ export function getConfig(configPath: string | undefined): DmarkConfig;
  *
  * @param {string[] | undefined} labels The input labels.
  * @returns {string[]} Input labels or no one.
+ * @throws {MissingStageNameError} if the config don't contains any valid stage defined.
  */
 export function getLabels(labels: string[] | undefined): string[];
 /**
@@ -70,9 +73,17 @@ export function getStacks(config: DmarkConfig, stacks: string[] | undefined): st
  * @param {string[] | undefined} stages The stages input.
  * @returns {string[]} The stages names.
  * @throws {NoConfigProvidedError} if no config was provided.
+ * @throws {MissingStageNameError} if the config don't contains any stage defined.
  * @throws {InvalidStageNameError} if a provided stage name from input is not compatible with the ones in the config.
  */
 export function getStages(config: DmarkConfig, stages: string[] | undefined): string[];
+/**
+ * Return the runner name to use, if undefined return the default value.
+ *
+ * @param {DmarkConfig} config The config object.
+ * @returns {string} The runner name.
+ */
+export function getRunner(config: DmarkConfig): string;
 /**
  * Execute a terraform command.
  *

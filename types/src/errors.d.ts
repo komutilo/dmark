@@ -25,4 +25,7 @@ export class MissingStackPathError extends Error {
 export class InvalidStackPathError extends Error {
     constructor(stackPath: any);
 }
+export class MissingStageNameError extends Error {
+    constructor();
+}
 //# sourceMappingURL=errors.d.ts.map

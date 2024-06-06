@@ -46,6 +46,7 @@ const { dmarkConfigSchemaValidator } = require('./dmarkConfigSchemaValidator');
 
 /**
  * @typedef {Object} DmarkConfig
+ * @property {string | undefined} runner
  * @property {GlobalStackConfig | undefined} globals
  * @property {Object.<string, StackConfig>} stacks
  */
@@ -55,6 +56,7 @@ const { dmarkConfigSchemaValidator } = require('./dmarkConfigSchemaValidator');
  * @property {string[]} stacks
  * @property {string[]} stages
  * @property {string[]} labels
+ * @property {string | undefined} runner
  * @property {boolean} fmt
  * @property {boolean} initUpgrade
  * @property {boolean} initMigrateState
@@ -65,6 +67,7 @@ const { dmarkConfigSchemaValidator } = require('./dmarkConfigSchemaValidator');
  */
 
 const ALL_STAGES = '__all__';
+const DEFAULT_RUNNER = 'terraform';
 
 /**
  * Return the config object from a config file in the target project.
@@ -474,6 +477,19 @@ function getLocal(config, stackName) {
 }
 
 /**
+ * Return the runner name to use, if undefined return the default value.
+ * 
+ * @param {DmarkConfig} config The config object.
+ * @returns {string} The runner name.
+ */
+function getRunner(config) {
+  if (!config?.runner) {
+    return DEFAULT_RUNNER;
+  }
+  return config?.runner;
+}
+
+/**
  * List the possibles commands to be called with the current config.
  *
  * @param {DmarkConfig} config The config object.
@@ -522,6 +538,7 @@ async function executeCommand(cmd, config, opts) {
   const cmdIsList = cmd === 'list';
   const stacks = reOrderStacks(config, opts?.stacks);
   const commandsQueue = [];
+  const { runner } = opts;
 
   for (const stackName of stacks) {
     if (cmdIsList) break;
@@ -557,11 +574,11 @@ async function executeCommand(cmd, config, opts) {
 
       if (!opts?.noInit) {
         if (isLocal) {
-          execInit = [...vars, 'terraform', `-chdir=${stackFolder}`, 'init'];
+          execInit = [...vars, runner, `-chdir=${stackFolder}`, 'init'];
         } else {
           execInit = [
             ...vars,
-            'terraform',
+            runner,
             `-chdir=${stackFolder}`,
             'init',
             ...backendConfig,
@@ -604,7 +621,7 @@ async function executeCommand(cmd, config, opts) {
       }
 
       if (opts?.fmt) {
-        let execFmt = [...vars, 'terraform', `-chdir=${stackFolder}`, 'fmt'];
+        let execFmt = [...vars, runner, `-chdir=${stackFolder}`, 'fmt'];
 
         if (cmd === 'fmt' && rest.length > 0) {
           execFmt = execFmt.concat(rest);
@@ -614,7 +631,7 @@ async function executeCommand(cmd, config, opts) {
       }
 
       if (cmd !== 'init' && cmd !== 'fmt') {
-        let exec = [...vars, 'terraform', `-chdir=${stackFolder}`, cmd];
+        let exec = [...vars, runner, `-chdir=${stackFolder}`, cmd];
 
         if (opts?.autoApprove && cmd !== 'plan') {
           exec.push('-auto-approve');
@@ -680,5 +697,6 @@ module.exports = {
   getLabels,
   getStacks,
   getStages,
+  getRunner,
   executeCommand,
 };
