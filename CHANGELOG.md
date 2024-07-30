@@ -4,7 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [1.1.1] - 2024-07-30
+### Fixes
+- Fixed dependabot audit alert. https://github.com/komutilo/dmark/security/dependabot/6
+
 ## [1.1.0] - 2024-06-06
+### Added
 - Added OpenTofu as an option to run the commands beyond the default terraform.
 - Added the `runner` field in the config file.
 
