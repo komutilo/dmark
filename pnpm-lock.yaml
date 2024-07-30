@@ -4,6 +4,9 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+overrides:
+  braces@<3.0.3: '>=3.0.3'
+
 dependencies:
   chalk:
     specifier: 4.1.0
