@@ -1,29 +1,35 @@
 # Dmark
 
+![Logo](./branding/dmark-branding-header.png)
+
+## Overview
 <!-- Badges -->
 [![git last tag][img-github-tag-badge]][link-github-tags] [![npm last version][img-npm-version-badge]][link-npm]
 
 Terraform wrapper for multi-stage and multi-stack that adds only a config file. Perfect for no HCP projects.
 
+---
+
 ## Dependencies
-
-
-**Runtime**  
+### **Runtime**
 - ***Node.js*** + ***npm***
 - ***Terraform >= 0.14.0*** or ***[OpenTofu](https://opentofu.org/)***
 
 
-**Development**  
+### **Development**
 - pnpm
+
 ---
+
 ## How to install
 ```sh
 npm i -g dmark
 ```
 
-## How to use
+---
 
-Example with an AWS S3 bucket:  
+## How to use
+Example with an AWS S3 bucket:
 
 
 The `./src/a-bucket/main.tf` file:
@@ -55,7 +61,7 @@ resource "aws_s3_bucket" "a_bucket" {
 ```
 
 
-The `./dmark.config.yaml` file:  
+The `./dmark.config.yaml` file:
 
 
 ```yaml
