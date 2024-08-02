@@ -15,7 +15,7 @@
   ],
   "eslint.format.enable": true,
   "eslint.options": {
-    "overrideConfigFile": "packages/dmark/config/.eslintrc"
+    "overrideConfigFile": "config/.eslintrc"
   },
   "[terraform]": {
     "editor.formatOnSave": true,
@@ -25,8 +25,5 @@
   },
   "[terraform-vars]": {
     "editor.tabSize": 2
-  },
-  "cSpell.words": [
-    "dmark"
-  ]
+  }
 }
