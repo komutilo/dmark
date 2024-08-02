@@ -43,6 +43,6 @@ __pycache__/
 
 # terraform
 .terraform/
-mocks/terraform/**/terraform.tfstate
-mocks/terraform/**/terraform.tfstate.*
-mocks/terraform/**/.terraform.tfstate.*
+/packages/**/mocks/terraform/**/terraform.tfstate
+/packages/**/mocks/terraform/**/terraform.tfstate.*
+/packages/**/mocks/terraform/**/.terraform.tfstate.*
