@@ -1,8 +1,8 @@
 const { runQueue, cmdTask } = require('../../src/utils');
 
 const fix = process.argv.includes('--fix');
-const eslintCmd = 'eslint -c ./config/.eslintrc --ignore-path ./config/.eslintignore'.split(' ');
-const auditCmd = 'pnpm audit'.split(' ');
+const eslintCmd = 'eslint -c ./config/.eslintrc --ignore-path ./config/.eslintignore';
+const auditCmd = 'pnpm audit';
 
 if (fix) {
   eslintCmd.push('--fix');
