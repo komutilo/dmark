@@ -2,7 +2,7 @@ const { runQueue, cmdTask } = require('../../src/utils');
 
 const watch = process.argv.includes('--watch');
 const coverage = process.argv.includes('--coverage');
-const jestCmd = 'jest --config=./config/jest.config.js --forceExit --detectOpenHandles';
+const jestCmd = 'jest --config=./config/jest.config.js --forceExit --detectOpenHandles'.split(' ');
 
 jestCmd.push(watch ? '--watch' : '--watchAll=false');
 

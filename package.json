@@ -8,5 +8,9 @@
   },
   "workspaces": [
     "packages"
-  ]
+  ],
+  "scripts": {
+    "lint": "pnpm run -r lint",
+    "test": "pnpm run -r test-coverage"
+  }
 }

@@ -12,8 +12,8 @@ npm-shrinkwrap.json
 bun.lockb
 
 # test
-/coverage/
-/tests_report/
+coverage/
+tests_report/
 .pytest_cache/
 .coverage
 junit.xml
