@@ -27,6 +27,9 @@
     "editor.tabSize": 2
   },
   "cSpell.words": [
-    "dmark"
+    "codesign",
+    "dmark",
+    "postject",
+    "signtool"
   ]
 }

@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [1.1.2] - 2024-08-??
+### Added
+- `esbuild` dev module to generate a bundle.
+- `postject` dev module to inject blob file into node executable in the binary release.
+
+### Fixes
+- Accept string as an input in the `args` parameter in the `cmdTask` function.
+
 ## [1.1.1] - 2024-07-30
 ### Fixes
 - Fixed dependabot audit alert. https://github.com/komutilo/dmark/security/dependabot/6

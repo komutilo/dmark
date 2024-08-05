@@ -19,6 +19,10 @@ async function runQueue(tasks) {
 }
 
 async function cmdTask(next, args) {
+  if (typeof args === 'string') {
+    args = args.split(' ');
+  }
+
   const ps = await execCmd(args);
   if (ps.code !== 0) process.exit(ps.code);
   next();
