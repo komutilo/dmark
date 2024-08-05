@@ -2,9 +2,9 @@
   "name": "dmark-workspace",
   "private": true,
   "volta": {
-    "node": "20.11.0",
-    "npm": "10.4.0",
-    "pnpm": "8.15.1"
+    "node": "20.16.0",
+    "npm": "10.7.0",
+    "pnpm": "9.6.0"
   },
   "workspaces": [
     "packages"
